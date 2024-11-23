@@ -176,4 +176,4 @@ def reset():
     return redirect( url_for('index', success_message = True) )
 
 if __name__ == '__main__':
-    pass
+    app.run(debug=True)
