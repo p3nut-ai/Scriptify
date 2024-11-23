@@ -128,7 +128,11 @@ def pass_txt():
     pdf_filename = request.args.get('pdf_filename')
     txt_filename = request.args.get('txt_filename')
     mp3_filename = pdf_path.rsplit('.', 1)[0] + '.mp3'
+
     displayOutput = txt_filename.rsplit('.', 1)[0] + '.mp3'
+
+
+    mp3_filename = os.path.basename(mp3_filename)
 
     with open(txt_filename, 'r') as file:
         file_contents = file.read()
@@ -145,7 +149,7 @@ def pass_txt():
         print(f'Voice selected: {voice}')
         tts(text=file_contents, voice = voice, filename = displayOutput, play_sound = False)
 
-        return redirect(url_for('index', success_message = "Pdf conversion is successful", mp3_filename = mp3_filename.rsplit('\\', 1)[1], file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
+        return redirect(url_for('index', success_message = "Pdf conversion is successful", mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
     else:
         return redirect(url_for('index', success_message = "No option was selected. Please select your voice."))
 
