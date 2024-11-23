@@ -65,7 +65,7 @@
         <!-- Upload Section (wider) -->
 
         <div class="md:col-span-2">
-          {% if (success_message == 'True' or success_message == None) %}
+          {% if (success_message == 'True' or success_message == none) %}
           <div>
             <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
               <h3 class="text-lg font-semibold mb-2">Upload your file here</h3>
