@@ -56,7 +56,7 @@ def upload_file():
 
         # Check if a file was uploaded
         if 'file' not in request.files:
-            return redirect(url_for('index', success_message="No file uploaded."))
+            return redirect(url_for('index', success_message=False))
 
         file = request.files['file']
         filename = file.filename
@@ -160,9 +160,9 @@ def pass_txt():
         print(f'Voice selected: {voice}')
         tts(text=file_contents, voice = voice, filename = displayOutput, play_sound = False)
 
-        return redirect(url_for('index', success_message = "Pdf conversion is successful", mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
+        return redirect(url_for('index', success_message = True, mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
     else:
-        return redirect(url_for('index', success_message = "No option was selected. Please select your voice."))
+        return redirect(url_for('index', success_message = False))
 
 @app.route('/reset', methods=['GET', 'POST'])
 def reset():
