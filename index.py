@@ -130,21 +130,20 @@ def pass_txt():
     pdf_filename = request.args.get('pdf_filename')
     txt_filename = request.args.get('txt_filename')
     mp3_filename = pdf_path.rsplit('.', 1)[0] + '.mp3'
-
     print(f"File name received: {txt_filename}")
 
     displayOutput = txt_filename.rsplit('.', 1)[0] + '.mp3'
 
 
     mp3_filename = os.path.basename(mp3_filename)
-    pdf_path = os.path.basename(pdf_path)
-    txt_path = os.path.basename(txt_path)
 
     with open(txt_filename, 'r') as file:
         file_contents = file.read()
 
     os.remove(pdf_path)
     os.remove(txt_path)
+    pdf_path = os.path.basename(pdf_path)
+    txt_path = os.path.basename(txt_path)
 
     print(f"selected voice is {voice}")
     PDF_src_pathFile = os.path.join(app.config['UPLOAD_FOLDER'], mp3_filename)
