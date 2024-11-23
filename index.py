@@ -106,14 +106,14 @@ def convert_file():
 
     # print(txt_filename)
 
-    txt_filename = os.path.basename(txt_filename)
+    txt_filename_edited = os.path.basename(txt_filename)
 
     # yung pdf file nag lalabas ng extra slash
     #  pdf_path == \\
     # Open the PDF file and read its content
     with open(pdf_path, 'rb') as pdf_file:
         reader = PyPDF2.PdfReader(pdf_file)
-        with open(txt_filename, 'w') as text_file:
+        with open(txt_filename_edited, 'w') as text_file:
             for page in reader.pages:
                 text = page.extract_text()
                 if text:  # Check if text extraction was successful
@@ -131,12 +131,15 @@ def pass_txt():
     txt_filename = request.args.get('txt_filename')
     mp3_filename = pdf_path.rsplit('.', 1)[0] + '.mp3'
 
+    print(f"File name received: {txt_filename}")
+
     displayOutput = txt_filename.rsplit('.', 1)[0] + '.mp3'
 
 
     mp3_filename = os.path.basename(mp3_filename)
     pdf_path = os.path.basename(pdf_path)
     txt_path = os.path.basename(txt_path)
+
     with open(txt_filename, 'r') as file:
         file_contents = file.read()
 
