@@ -108,6 +108,10 @@ def generate_audio(text: str, voice: str) -> bytes:
     return response.content
 
 
+
+
+
+
 # creates an text to speech audio file
 def tts(
     text: str,

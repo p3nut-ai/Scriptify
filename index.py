@@ -13,7 +13,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # check if file is pdf, will return true or false
 def if_pdf(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else None
+    print(f"File extension: {extension}")
+    return extension in ALLOWED_EXTENSIONS
 
 def move_audio_to_static(src_path, static_folder = app.config['UPLOAD_FOLDER']):
     try:
@@ -43,29 +46,32 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        print(f"Received files: {request.files}")
 
-        print(request.files)
-        # voice = request.form.get('voice')
-        for filename in os.listdir(UPLOAD_FOLDER):
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
-        # Check if it's a file and remove it
+        # Clean the upload folder
+        for filename in os.listdir(app.config['UPLOAD_FOLDER']):
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             if os.path.isfile(file_path):
                 os.remove(file_path)
 
-        if 'file' not in request.files: # check if there's file
-            return redirect(url_for('index', success_message = "Invalid file format."))
+        # Check if a file was uploaded
+        if 'file' not in request.files:
+            return redirect(url_for('index', success_message="No file uploaded."))
 
-        file = request.files['file'] # getting pdf file
-        filename = file.filename # storing the name of pdf file
+        file = request.files['file']
+        filename = file.filename
+        print(f"Uploaded file name: {filename}")
 
-        print(f"Uploaded PDF Name : {filename}")
-
+        # Validate file extension
         if file and if_pdf(filename):
             pathFile = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(pathFile)  # save file
+            file.save(pathFile)
+            return redirect(url_for('get_pdf', pathFile=pathFile, filename=filename, success_message=True))
+        else:
+            return redirect(url_for('index', success_message=False))
 
-            return redirect(url_for('get_pdf', pathFile = pathFile, filename = filename))
     return render_template('index.html')
+
 
 
 
@@ -163,10 +169,11 @@ def reset():
     for filename in os.listdir(UPLOAD_FOLDER):
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         # Check if it's a file and remove it
+        # success_message = True
         if os.path.isfile(file_path):
             os.remove(file_path)
             print(f'Removed file: {file_path}')
-    return render_template('main.html')
+    return redirect( url_for('index', success_message = True) )
 
 if __name__ == '__main__':
     app.run(debug=True)
