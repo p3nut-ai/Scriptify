@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <title>PDF Summarizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+
+  <style>
+  .fade-out {
+    animation: fadeOut 1s forwards; /* 1 second fade-out */
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+</style>
+
+</head>
+<body class="min-h-screen bg-gray-50 text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
+  <!-- splash screen -->
+  <div id="splash-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-gray-950  text-white z-50">
+    <img data-aos="fade-up" src="{{ url_for('static', filename='1.png') }}" alt="">
+
+  </div>
+
+
+
+
+  <div class="container mx-auto p-4 " id="main_container">
+    <div class="max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-44 p-4">
+      <!-- Header -->
+      <div class="flex justify-between items-center px-6 py-4">
+        <div>
+          <h1 class="text-2xl font-bold">Read less, listen more. </h1>
+          <p class="text-sm">Upload a PDF to get a summary with audio playback</p>
+        </div>
+        <!-- Light/Dark Mode Button -->
+        <button class="p-2 rounded-full bg-neutral-100 dark:bg-gray-700" id="themeToggle">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-7 dark:hidden">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+          </svg>
+
+          <!-- moon / darkmode -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hidden dark:block">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+          </svg>
+
+        </button>
+      </div>
+
+      <!-- Main Content -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-6">
+        <!-- Upload Section (wider) -->
+        <div class="md:col-span-2">
+          <div>
+            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+              <h3 class="text-lg font-semibold mb-2">Upload your file here</h3>
+              <label
+                for="file-upload"
+                id="drop-area"
+                class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-100 dark:bg-gray-700"
+              >
+                <div id="drop-text" class="text-center">
+                  <img src="{{ url_for('static', filename='2.svg') }}" class="ml-20 h-10 w-10 text-neutral-500 mb-2" alt="Upload Icon">
+                  <p class="text-sm text-gray-500 dark:text-gray-300">
+                    <strong>Click to upload</strong> or drag and drop
+                  </p>
+                  <p class="text-xs text-neutral-500 dark:text-neutral-400 pt-2">PDF (MAX. 10MB)</p>
+                </div>
+                <input id="file-upload" type="file" name="file" class="hidden" />
+              </label>
+            </form>
+          </div>
+
+
+
+          {% if pdf_uploaded == 'True' %}
+            <form action="{{ url_for('convert_file') }}" method="post" id="convert_file_form">
+              <div class="w-full max-w-3xl mx-auto mt-4">
+                <div class="flex items-center justify-between gap-4 p-4 rounded-lg border bg-white dark:bg-gray-700">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"></path>
+                      <path d="M14 2v6h6"></path>
+                    </svg>
+                    <span class="text-sm font-medium truncate">{{ pdf_filename }}</span>
+                    <input type="hidden" name="file" value="{{ pdf_filename }}">
+                    <input type="text" style="display: none;" name="pathFile" value="{{ pathFile }}">
+                  </div>
+
+                  <div class="w-[200px]">
+                    <select id="voiceSelect" name="voice" class="w-full p-2 border rounded-lg text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600" required>
+                      <option value="" selected disabled>Select option</option>
+                      {% for voice in voices %}
+                      <option value="{{ voice }}">{{ voice }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <button id="process_btn" class="min-w-[100px] px-4 py-2 bg-blue-600 text-sm text-white font-semibold rounded-lg disabled:bg-gray-300 flex items-center justify-center space-x-2">
+                    <span>Convert to MP3</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+            {% endif %}
+
+
+        </div>
+
+        <!-- Summary and Audio Section -->
+        <div>
+          {% if file_converted == 'True' %}
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold mb-2">Audio Playback</h3>
+              <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-4">
+                  <button class="p-2 bg-white dark:bg-gray-800 rounded-full" id="play_mp3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path id="playPauseIcon" d="M5 3v18l14-9L5 3z"></path>
+                    </svg>
+                  </button>
+                  <div class="text-sm text-neutral-600 dark:text-neutral-300">
+                    <span id="duration"></span>
+                  </div>
+                </div>
+
+                <a class="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 text-white font-medium text-sm leading-tight uppercase rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out" href="{{ url_for('static',filename='uploads/' + mp3_filename) }}" download>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="animate-bounce w-6 h-6 mr-2" viewBox="0 0 24 24">
+                    <path d="M5 20h14v-2H5v2zm7-18l-6 6h4v6h4v-6h4l-6-6z"/>
+                  </svg>
+
+                  {{ mp3_filename }}
+
+                </a>
+
+                <!-- <div class="bg-white dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <p class="text-sm">{{ pdf_filename }}</p>
+                </div> -->
+              </div>
+            </div>
+            <audio controls id="audio_player" style="display:none;">
+              <source src="{{ url_for('static', filename='uploads/'~mp3_filename) }}" type="audio/ogg">
+              <source src="{{ url_for('static', filename='uploads/'~mp3_filename) }}" type="audio/mpeg">
+            </audio>
+          </div>
+          {% else %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 border-neutral-300 dark:border-gray-600 flex justify-between items-center">
+        <p class="text-sm text-neutral-400 dark:text-neutral-500">Max file size: 10MB</p>
+        <a href="{{ url_for('reset') }}" class="text-sm text-black-500 hover:underline bg-white dark:bg-gray-800 font-semibold border-gray-200 dark:border-gray-600 border pl-4 pr-4 pt-2 pb-2">Reset</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM fully loaded and parsed.");
+
+    AOS.init();
+
+    const splashScreen = document.getElementById("splash-screen");
+      // const mainContent = document.getElementById("main-content");
+
+      // Check if the splash screen has already been shown
+      if (sessionStorage.getItem("splashShown") === "true") {
+        // Skip the splash screen and show the main content
+        splashScreen.classList.add("hidden");
+        // mainContent.classList.remove("hidden");
+      } else {
+        // Show the splash screen for the first time
+        setTimeout(() => {
+          if (splashScreen) {
+            splashScreen.classList.add("fade-out"); // Add fade-out effect
+            setTimeout(() => {
+              splashScreen.classList.add("hidden"); // Ensure it's hidden after the fade-out
+              // mainContent.classList.remove("hidden"); // Show main content
+              sessionStorage.setItem("splashShown", "true"); // Set the flag in localStorage
+            }, 1000); // Time for fade-out animation
+          }
+        }, 2000); // Time to show the splash screen
+      }
+
+
+    // File Upload and Drop Area
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('file-upload');
+    const dropArea = document.getElementById('drop-area');
+
+    if (!form || !fileInput || !dropArea) {
+        console.error("File upload elements not found.");
+    } else {
+        console.log("File upload elements loaded successfully.");
+
+        // Trigger form submission when a file is selected
+        fileInput.addEventListener('change', () => {
+            console.log("File selected, attempting to submit form...");
+            form.submit();
+        });
+
+        // Prevent default behavior when dragging over drop area
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('bg-gray-200'); // Optional visual feedback
+        });
+
+        // Remove feedback when leaving drop area
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('bg-gray-200');
+        });
+
+        // Handle file drop and submit form
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('bg-gray-200');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files; // Set the dropped files to the file input
+                form.submit(); // Submit form after file drop
+            }
+        });
+    }
+
+    // Audio Playback Functionality
+    const playButton = document.getElementById("play_mp3");
+    const audioPlayer = document.getElementById('audio_player');
+    const playPauseIcon = document.getElementById('playPauseIcon');
+    const duration = document.getElementById("duration");
+
+    if (playButton && audioPlayer && playPauseIcon && duration) {
+        playButton.addEventListener('click', function () {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playPauseIcon.setAttribute("d", "M6 19H18V5H6V19Z"); // Pause Icon
+            } else {
+                audioPlayer.pause();
+                playPauseIcon.setAttribute("d", "M5 3v18l14-9L5 3z"); // Play Icon
+            }
+
+            audioPlayer.ontimeupdate = function () {
+                const remainingTime = audioPlayer.duration - audioPlayer.currentTime;
+                duration.innerHTML = formatTime(remainingTime);
+            };
+
+            function formatTime(seconds) {
+                const min = Math.floor(seconds / 60);
+                const sec = Math.floor(seconds % 60);
+                return `${min < 10 ? "0" + min : min}:${sec < 10 ? "0" + sec : sec}`;
+            }
+        });
+    } else {
+        console.warn("Audio playback elements not found.");
+    }
+
+    // Light/Dark Mode Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlElement = document.documentElement;
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Persist theme on page reload
+        if (localStorage.getItem('theme') === 'dark') {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+    } else {
+        console.warn("Theme toggle button not found.");
+    }
+
+    // Prevent Multiple Clicks During Processing
+    let isProcessing = false;
+
+    const handleProcess = async () => {
+        console.log("Clicked Process Button");
+
+        const button = document.getElementById("process_btn");
+        if (!button) {
+            console.error("Process button not found.");
+            return;
+        }
+
+        const actionSelect = document.querySelector("select");
+        if (!actionSelect) {
+            console.error("Select element not found.");
+            return;
+        }
+
+        if (!actionSelect.value) {
+            console.warn("No option selected.");
+            return;
+        }
+
+        if (isProcessing) {
+            console.log("Already processing, please wait...");
+            return;
+        }
+
+        isProcessing = true;
+        button.disabled = true;
+        button.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processing...';
+
+        // Simulate processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        console.log("Processing complete, submitting form...");
+        isProcessing = false;
+        button.disabled = false;
+        document.getElementById("convert_file_form").submit();
+
+        button.setAttribute("class", "bg-green-600 min-w-[50px] px-2 py-2 text-sm text-white font-semibold rounded-lg disabled:bg-gray-300 flex items-center justify-center space-x-2");
+        button.innerHTML = '<p class="pl-2 pr-2">Submitted</p>';
+    };
+
+    const processButton = document.getElementById('process_btn');
+    if (processButton) {
+        processButton.addEventListener("click", handleProcess);
+    } else {
+        console.error("Process button with ID 'process_btn' not found.");
+    }
+});
+
+
+</script>
+
+
+
+
+</body>
+</html>
