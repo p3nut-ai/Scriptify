@@ -113,7 +113,7 @@ def convert_file():
     # Open the PDF file and read its content
     with open(pdf_path, 'rb') as pdf_file:
         reader = PyPDF2.PdfReader(pdf_file)
-        with open(txt_filename_edited, 'w') as text_file:
+        with open(txt_filename, 'w') as text_file:
             for page in reader.pages:
                 text = page.extract_text()
                 if text:  # Check if text extraction was successful
@@ -170,4 +170,4 @@ def reset():
     return render_template('main.html')
 
 if __name__ == '__main__':
-    pass
+    app.run(debug=True)
