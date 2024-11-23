@@ -135,7 +135,8 @@ def pass_txt():
 
 
     mp3_filename = os.path.basename(mp3_filename)
-
+    pdf_path = os.path.basename(pdf_path)
+    txt_path = os.path.basename(txt_path)
     with open(txt_filename, 'r') as file:
         file_contents = file.read()
 
