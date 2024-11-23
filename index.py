@@ -104,7 +104,9 @@ def convert_file():
 
     txt_filename = pdf_path.rsplit(".", 1)[0] + ".txt"
 
-    print(txt_filename)
+    # print(txt_filename)
+
+    txt_filename = os.path.basename(txt_filename)
 
     # yung pdf file nag lalabas ng extra slash
     #  pdf_path == \\
