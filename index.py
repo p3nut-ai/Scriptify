@@ -10,9 +10,7 @@ app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = ['pdf']
 MAX_PAGES = 12
-UPLOAD_FOLDER = 'static/uploads'
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+uploads_directory = os.path.join(os.getcwd(), "static", "uploads")
 
 # will check if the extension is pdf or not, will return TRUE OR FALSE
 def allowed_extension(filename):
@@ -21,7 +19,7 @@ def allowed_extension(filename):
     return extension in ALLOWED_EXTENSIONS
 
 # will move the output file from main directory to static/uploads
-def move_audio_to_static(src_path, static_folder = app.config['UPLOAD_FOLDER']):
+def move_audio_to_static(src_path, static_folder = uploads_directory):
     try:
         filename = os.path.basename(src_path)
         dest_path = os.path.join(static_folder, filename)
@@ -62,8 +60,8 @@ def remove_images_from_pdf(input_pdf_path, output_pdf_path):
 
 
 def clean_upload_folder():
-    for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    for filename in os.listdir(uploads_directory):
+            file_path = os.path.join(uploads_directory, filename)
             if os.path.isfile(file_path):
                 os.remove(file_path)
 
