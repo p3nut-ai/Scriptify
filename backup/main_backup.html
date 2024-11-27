@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <title>Scriptify: PDF to MP3</title>
+  <title>PDF Summarizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -47,7 +44,7 @@
       <div class="flex justify-between items-center px-6 py-4">
         <div>
           <h1 class="text-2xl font-bold">Read less, listen more. </h1>
-          <p class="text-sm">Upload your PDF and enjoy audio playback of the text!</p>
+          <p class="text-sm">Upload a PDF to get a summary with audio playback</p>
         </div>
         <!-- Light/Dark Mode Button -->
         <button class="p-2 rounded-full bg-neutral-100 dark:bg-gray-700" id="themeToggle">
@@ -68,30 +65,7 @@
         <!-- Upload Section (wider) -->
 
         <div class="md:col-span-2">
-          {% if limit_exceed == 'True' %}
-          <div>
-            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
-              <h3 class="text-lg font-semibold mb-2">Upload your file here</h3>
-              <label
-                for="file-upload"
-                id="drop-area"
-                class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-rose-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-100 dark:bg-gray-700"
-              >
-                <div id="drop-text" class="flex items-center justify-center space-x-4">
-                  <!-- Centered SVG -->
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-rose-500">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                  </svg>
-                  <!-- Text -->
-                  <p class="text-sm text-rose-500 dark:text-gray-300">
-                    <strong>Error: </strong> Sorry, the PDF contains {{ num_pages }} pages, which exceeds the maximum limit of {{ MAX_PAGES }} pages.
-                  </p>
-                </div>
-                <input id="file-upload" type="file" name="file" class="hidden" />
-              </label>
-            </form>
-          </div>
-          {% elif (success_message == 'True' or success_message == none) %}
+          {% if (success_message == 'True' or success_message == none) %}
           <div>
             <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
               <h3 class="text-lg font-semibold mb-2">Upload your file here</h3>
@@ -105,7 +79,7 @@
                   <p class="text-sm text-gray-500 dark:text-gray-300">
                     <strong>Click to upload</strong> or drag and drop
                   </p>
-                  <p class="text-xs text-neutral-500 dark:text-neutral-400 pt-2">PDF (MAX. 10 PG.)</p>
+                  <p class="text-xs text-neutral-500 dark:text-neutral-400 pt-2">PDF (MAX. 10MB)</p>
                 </div>
                 <input id="file-upload" type="file" name="file" class="hidden" />
               </label>
@@ -127,7 +101,7 @@
                   </svg>
                   <!-- Text -->
                   <p class="text-sm text-rose-500 dark:text-gray-300">
-                    <strong>Error: </strong> file type is not valid
+                    <strong>Error: </strong> file extension is not valid
                   </p>
                 </div>
                 <input id="file-upload" type="file" name="file" class="hidden" />
@@ -151,14 +125,13 @@
                     <span class="text-sm font-medium truncate">{{ pdf_filename }}</span>
                     <input type="hidden" name="file" value="{{ pdf_filename }}">
                     <input type="text" style="display: none;" name="pathFile" value="{{ pathFile }}">
-                    <input type="text" style="display: none;" name="reader" value="{{ reader }}">
                   </div>
 
                   <div class="w-[200px]">
                     <select id="voiceSelect" name="voice" class="w-full p-2 border rounded-lg text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600" required>
                       <option value="" selected disabled>Select option</option>
-                      {% for key, value in voices.items() %}
-                      <option value="{{ key }}">{{ value }}</option>
+                      {% for voice in voices %}
+                      <option value="{{ voice }}">{{ voice }}</option>
                       {% endfor %}
                     </select>
                   </div>
@@ -218,7 +191,7 @@
 
       <!-- Footer -->
       <div class="px-6 py-4 border-neutral-300 dark:border-gray-600 flex justify-between items-center">
-        <p class="text-sm text-neutral-400 dark:text-neutral-500">Max file size: 10 Pages</p>
+        <p class="text-sm text-neutral-400 dark:text-neutral-500">Max file size: 10MB</p>
         <a href="{{ url_for('reset') }}" class="text-sm text-black-500 hover:underline bg-white dark:bg-gray-800 font-semibold border-gray-200 dark:border-gray-600 border pl-4 pr-4 pt-2 pb-2">Reset</a>
       </div>
     </div>
@@ -388,7 +361,7 @@
         button.disabled = false;
         document.getElementById("convert_file_form").submit();
 
-        button.setAttribute("class", "bg-inherit min-w-[50px] px-2 py-2 text-sm text-white font-semibold rounded-lg disabled:bg-gray-300 flex items-center justify-center space-x-2");
+        button.setAttribute("class", "bg-green-600 min-w-[50px] px-2 py-2 text-sm text-white font-semibold rounded-lg disabled:bg-gray-300 flex items-center justify-center space-x-2");
         button.innerHTML = '<p class="pl-2 pr-2">Submitted</p>';
     };
 

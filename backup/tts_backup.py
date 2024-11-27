@@ -6,27 +6,56 @@ from typing import List
 from termcolor import colored
 from playsound import playsound
 
-import time
-from threading import Lock
-
-lock = Lock()
-
-VOICES = {
-    "en_us_ghostface": "Ghost Face",
-    "en_au_001": "English AU - Female",
-    "en_au_002": "English AU - Male",
-    "en_uk_001": "English UK - Male 1",
-    "en_uk_003": "English UK - Male 2",
-    "en_us_001": "English US - Female (Int. 1)",
-    "en_us_002": "English US - Female (Int. 2)",
-    "en_us_006": "English US - Male 1",
-    "en_us_007": "English US - Male 2",
-    "en_us_009": "English US - Male 3",
-    "en_us_010": "English US - Male 4",
-    "en_male_narration": "English Male Narrator",
-    "en_male_funny": "English Male Funny",
-    "en_female_emotional": "English Female Emotional"
-}
+VOICES = [
+    # DISNEY VOICES
+    "en_us_ghostface",  # Ghost Face
+    "en_us_chewbacca",  # Chewbacca
+    "en_us_c3po",  # C3PO
+    "en_us_stitch",  # Stitch
+    "en_us_stormtrooper",  # Stormtrooper
+    "en_us_rocket",  # Rocket
+    # ENGLISH VOICES
+    "en_au_001",  # English AU - Female
+    "en_au_002",  # English AU - Male
+    "en_uk_001",  # English UK - Male 1
+    "en_uk_003",  # English UK - Male 2
+    "en_us_001",  # English US - Female (Int. 1)
+    "en_us_002",  # English US - Female (Int. 2)
+    "en_us_006",  # English US - Male 1
+    "en_us_007",  # English US - Male 2
+    "en_us_009",  # English US - Male 3
+    "en_us_010",  # English US - Male 4
+    # EUROPE VOICES
+    "fr_001",  # French - Male 1
+    "fr_002",  # French - Male 2
+    "de_001",  # German - Female
+    "de_002",  # German - Male
+    "es_002",  # Spanish - Male
+    # AMERICA VOICES
+    "es_mx_002",  # Spanish MX - Male
+    "br_001",  # Portuguese BR - Female 1
+    "br_003",  # Portuguese BR - Female 2
+    "br_004",  # Portuguese BR - Female 3
+    "br_005",  # Portuguese BR - Male
+    # ASIA VOICES
+    "id_001",  # Indonesian - Female
+    "jp_001",  # Japanese - Female 1
+    "jp_003",  # Japanese - Female 2
+    "jp_005",  # Japanese - Female 3
+    "jp_006",  # Japanese - Male
+    "kr_002",  # Korean - Male 1
+    "kr_003",  # Korean - Female
+    "kr_004",  # Korean - Male 2
+    # SINGING VOICES
+    "en_female_f08_salut_damour",  # Alto
+    "en_male_m03_lobby",  # Tenor
+    "en_female_f08_warmy_breeze",  # Warmy Breeze
+    "en_male_m03_sunshine_soon",  # Sunshine Soon
+    # OTHER
+    "en_male_narration",  # narrator
+    "en_male_funny",  # wacky
+    "en_female_emotional",  # peaceful
+]
 
 ENDPOINTS = [
     "https://tiktok-tts.weilnet.workers.dev/api/generation",
@@ -77,6 +106,10 @@ def generate_audio(text: str, voice: str) -> bytes:
     data = {"text": text, "voice": voice}
     response = requests.post(url, headers=headers, json=data)
     return response.content
+
+
+
+
 
 
 # creates an text to speech audio file
@@ -131,28 +164,18 @@ def tts(
             audio_base64_data = [None] * len(text_parts)
 
             # Define a thread function to generate audio for each text part
-            def generate_audio_thread(text_part, index, retries=3):
-                for attempt in range(retries):
-                    try:
-                        audio = generate_audio(text_part, voice)
-                        if current_endpoint == 0:
-                            base64_data = str(audio).split('"')[5]
-                        else:
-                            base64_data = str(audio).split('"')[3].split(",")[1]
+            def generate_audio_thread(text_part, index):
+                audio = generate_audio(text_part, voice)
+                if current_endpoint == 0:
+                    base64_data = str(audio).split('"')[5]
+                else:
+                    base64_data = str(audio).split('"')[3].split(",")[1]
 
-                        if base64_data == "error":
-                            raise ValueError("This voice is unavailable right now")
+                if audio_base64_data == "error":
+                    print(colored("[-] This voice is unavailable right now", "red"))
+                    return "error"
 
-                        with lock:
-                            audio_base64_data[index] = base64_data
-                        return
-                    except Exception as e:
-                        print(colored(f"Thread {index} failed on attempt {attempt + 1}: {e}", "red"))
-                        time.sleep(1)
-
-                with lock:
-                    audio_base64_data[index] = ""
-                print(colored(f"Thread {index} failed after {retries} attempts.", "red"))
+                audio_base64_data[index] = base64_data
 
             threads = []
             for index, text_part in enumerate(text_parts):
@@ -177,3 +200,11 @@ def tts(
 
     except Exception as e:
         print(colored(f"[-] An error occurred during TTS: {e}", "red"))
+
+
+if __name__ == "__main__":
+    sample_text = "Top 10 facts about psychology"
+    sample_voice = "en_male_narration"  # Choose a voice from the VOICES list
+    # en_us_006
+    # Call the TTS function
+    tts(text=sample_text, voice=sample_voice, filename="output.mp3", play_sound=True)
