@@ -26,7 +26,7 @@ def move_audio_to_static(src_path, static_folder = uploads_directory):
 
         normalized_dest_path = dest_path.replace(os.path.sep, '/')
 
-        shutil.move(src_path, dest_path)
+        shutil.copy(src_path, dest_path)
 
         return normalized_dest_path
     except Exception as e:
@@ -178,7 +178,7 @@ def convert_file():
 def pass_txt():
     print(colored(f"PASSING THE TXT FILE TO TTS FUNCTION...", "green"))
 
-    #  THE TXT FILE EXIST HERE
+
     print(f"Contents of /workspace:")
     os.system("ls /workspace")
 
@@ -196,7 +196,7 @@ def pass_txt():
     print(f"Checking file: {txt_filename}")
 
 
-    #BUT SOMEHOW THE TXT FILE IS MISSING HERE
+
     if not os.path.isfile(txt_file_path):
         print(colored(f"Error: File does not exist: {txt_filename}", "red"))
         print(f"Current working directory: {os.getcwd()}")
@@ -211,15 +211,15 @@ def pass_txt():
         print(colored(f"Error reading file: {e}", "red"))
         return redirect(url_for('index', success_message=False))
 
-    # Move files to static directory for access
-    move_audio_to_static(pdf_filename)
-    move_audio_to_static(txt_filename)
 
     # Perform text-to-speech conversion
     if voice:
         print(colored(f"VOICE SELECTED : {voice}", "cyan"))
         tts(text=file_contents, voice=voice, filename=mp3_filename, play_sound=False)
         move_audio_to_static(mp3_filename)
+        # Move files to static directory for access
+        move_audio_to_static(pdf_filename)
+        move_audio_to_static(txt_filename)
 
         return redirect(url_for('index', success_message=True, mp3_filename=mp3_filename, file_converted=True, pdf_filename=pdf_filename))
     else:
