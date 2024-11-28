@@ -163,7 +163,7 @@ def convert_file():
                 if text:  # Check if text extraction was successful
                     text_file.write(text)
                 else:
-                    print(colored("Error no text extracted","red"))    
+                    print(colored("Error no text extracted","red"))
 
     print(colored(f"TXT FILE CREATED AT: {os.path.abspath(txt_filename)}", "green"))
 
@@ -177,7 +177,7 @@ def convert_file():
 @app.route('/pass_txt', methods=['GET', 'POST'])
 def pass_txt():
     print(colored(f"PASSING THE TXT FILE TO TTS FUNCTION...", "green"))
-
+    print(f"Current working directory: {os.getcwd()}")
     # Retrieve parameters
     voice = request.args.get('voice')
     pdf_filename = request.args.get('pdf_filename')
@@ -195,7 +195,7 @@ def pass_txt():
     # Ensure the TXT file exists
     if not os.path.isfile(txt_filename):
         print(colored(f"Error: File does not exist: {txt_filename}", "red"))
-        print(f"Current working directory: {os.getcwd()}")
+
         print(f"Contents of /workspace:")
         os.system("ls /workspace")  # Log contents of the directory for debugging
         return redirect(url_for('index', success_message=False))
