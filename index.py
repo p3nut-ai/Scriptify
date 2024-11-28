@@ -180,14 +180,14 @@ def pass_txt():
     txt_filename = request.args.get('txt_filename')
     mp3_filename = txt_filename.rsplit('.', 1)[0] + '.mp3'
 
+
+
     print(colored(f"SELECTED VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
 
     with open(txt_filename, 'r') as file:
         file_contents = file.read()
 
-    move_audio_to_static(pdf_filename)
-    move_audio_to_static(txt_filename)
 
     if voice:
         print(colored(f"VOICE SELECTED : {voice}", "cyan"))
@@ -196,8 +196,14 @@ def pass_txt():
 
         move_audio_to_static(mp3_filename)
 
+        # moves file into static/uploads
+        move_audio_to_static(pdf_filename)
+        move_audio_to_static(txt_filename)
         return redirect(url_for('index', success_message = True, mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
     else:
+        # moves file into static/uploads
+        move_audio_to_static(pdf_filename)
+        move_audio_to_static(txt_filename)
         return redirect(url_for('index', success_message = False))
 
 @app.route('/reset', methods=['GET', 'POST'])
