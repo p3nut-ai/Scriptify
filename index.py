@@ -162,6 +162,8 @@ def convert_file():
                 text = page.extract_text()
                 if text:  # Check if text extraction was successful
                     text_file.write(text)
+                else:
+                    print(colored("Error no text extracted","red"))    
 
     print(colored(f"TXT FILE CREATED AT: {os.path.abspath(txt_filename)}", "green"))
 
