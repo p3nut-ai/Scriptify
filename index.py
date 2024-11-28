@@ -171,6 +171,7 @@ def convert_file():
 
     return redirect(url_for('pass_txt', txt_filename = txt_filename, pdf_filename = pdf_filename, voice = voice))
 
+
 @app.route('/pass_txt', methods=['GET', 'POST'])
 def pass_txt():
     print(colored(f"PASSING THE TXT FILE TO TTS FUNCTION...", "green"))
@@ -180,13 +181,25 @@ def pass_txt():
     txt_filename = request.args.get('txt_filename')
     mp3_filename = txt_filename.rsplit('.', 1)[0] + '.mp3'
 
-
+    # Adjust paths for server
+    txt_file_path = os.path.join('/workspace', txt_filename)
 
     print(colored(f"SELECTED VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
+    print(f"Checking file: {txt_file_path}")
 
-    with open(txt_filename, 'r') as file:
-        file_contents = file.read()
+    # Ensure the file exists
+    if not os.path.isfile(txt_file_path):
+        print(colored(f"Error: File does not exist: {txt_file_path}", "red"))
+        return redirect(url_for('index', success_message=False))
+
+    # Open file safely
+    try:
+        with open(txt_file_path, 'r') as file:
+            file_contents = file.read()
+    except Exception as e:
+        print(colored(f"Error reading file: {e}", "red"))
+        return redirect(url_for('index', success_message=False))
 
     move_audio_to_static(pdf_filename)
     move_audio_to_static(txt_filename)
@@ -194,13 +207,14 @@ def pass_txt():
     if voice:
         print(colored(f"VOICE SELECTED : {voice}", "cyan"))
 
-        tts(text=file_contents, voice = voice, filename = mp3_filename, play_sound = False)
+        tts(text=file_contents, voice=voice, filename=mp3_filename, play_sound=False)
 
         move_audio_to_static(mp3_filename)
 
-        return redirect(url_for('index', success_message = True, mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
+        return redirect(url_for('index', success_message=True, mp3_filename=mp3_filename, file_converted=True, pdf_filename=pdf_filename))
     else:
-        return redirect(url_for('index', success_message = False))
+        return redirect(url_for('index', success_message=False))
+
 
 @app.route('/reset', methods=['GET', 'POST'])
 def reset():
