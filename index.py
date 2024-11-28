@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = ['pdf']
 MAX_PAGES = 12
-uploads_directory = os.path.join(os.getcwd(), "workspace","static", "uploads")
+uploads_directory = os.path.join(os.getcwd(), "static", "uploads")
 
 # will check if the extension is pdf or not, will return TRUE OR FALSE
 def allowed_extension(filename):
