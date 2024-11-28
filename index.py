@@ -155,15 +155,15 @@ def convert_file():
     reader = reader = request.form.get('reader')
     txt_filename = pdf_filename.rsplit(".", 1)[0] + ".txt"
 
-    # remove_images_from_pdf(pdf_filename, pdf_filename)
-
     with open(pdf_filename, 'rb') as pdf_file:
         reader = PyPDF2.PdfReader(pdf_file)
         with open(txt_filename, 'w') as text_file:
-                for page in reader.pages:
-                    text = page.extract_text()
-                    if text:  # Check if text extraction was successful
-                        text_file.write(text)
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:  # Check if text extraction was successful
+                    text_file.write(text)
+
+    print(colored(f"TXT FILE CREATED AT: {os.path.abspath(txt_filename)}", "green"))
 
     print(colored(f"VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
