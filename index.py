@@ -180,28 +180,36 @@ def pass_txt():
     txt_filename = request.args.get('txt_filename')
     mp3_filename = txt_filename.rsplit('.', 1)[0] + '.mp3'
 
-
-
     print(colored(f"SELECTED VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
+    print(f"Checking file: {txt_filename}")
 
-    with open(txt_filename, 'r') as file:
-        file_contents = file.read()
+    # Ensure file exists
+    if not os.path.isfile(txt_filename):
+        print(colored(f"Error: File does not exist: {txt_filename}", "red"))
+        return jsonify({"error": f"File not found: {txt_filename}"}), 404
 
-    # moves file into static/uploads
+    # Open file safely
+    try:
+        with open(txt_filename, 'r') as file:
+            file_contents = file.read()
+    except Exception as e:
+        print(colored(f"Error reading file: {e}", "red"))
+        return jsonify({"error": "Could not read file"}), 500
+
     move_audio_to_static(pdf_filename)
     move_audio_to_static(txt_filename)
 
     if voice:
         print(colored(f"VOICE SELECTED : {voice}", "cyan"))
 
-        tts(text=file_contents, voice = voice, filename = mp3_filename, play_sound = False)
+        tts(text=file_contents, voice=voice, filename=mp3_filename, play_sound=False)
 
         move_audio_to_static(mp3_filename)
 
-        return redirect(url_for('index', success_message = True, mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
+        return redirect(url_for('index', success_message=True, mp3_filename=mp3_filename, file_converted=True, pdf_filename=pdf_filename))
     else:
-        return redirect(url_for('index', success_message = False))
+        return redirect(url_for('index', success_message=False))
 
 @app.route('/reset', methods=['GET', 'POST'])
 def reset():
