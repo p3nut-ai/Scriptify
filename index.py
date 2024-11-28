@@ -213,7 +213,7 @@ def pass_txt():
 
 
     # Perform text-to-speech conversion
-    if voice:
+    try:
         print(colored(f"VOICE SELECTED : {voice}", "cyan"))
         tts(text=file_contents, voice=voice, filename=mp3_filename, play_sound=False)
         move_audio_to_static(mp3_filename)
@@ -222,8 +222,10 @@ def pass_txt():
         move_audio_to_static(txt_filename)
 
         return redirect(url_for('index', success_message=True, mp3_filename=mp3_filename, file_converted=True, pdf_filename=pdf_filename))
-    else:
-        return redirect(url_for('index', success_message=False))
+    except Exception as e:
+
+        return redirect(url_for('index', success_message=False, flag = "An error occured please re-upload the file"))
+
 
 
 
