@@ -178,25 +178,26 @@ def convert_file():
 def pass_txt():
     print(colored(f"PASSING THE TXT FILE TO TTS FUNCTION...", "green"))
 
+    #  THE TXT FILE EXIST HERE
     print(f"Contents of /workspace:")
-    os.system("ls /workspace")  # Log contents of the directory for debugging
+    os.system("ls /workspace")
 
     # Retrieve parameters
     voice = request.args.get('voice')
     pdf_filename = request.args.get('pdf_filename')
     txt_filename = request.args.get('txt_filename')
     mp3_filename = os.path.splitext(txt_filename)[0] + '.mp3'  # Generate MP3 filename
+    txt_file_path = os.path.join('/workspace', txt_filename)
 
-    # Adjust paths for server
-    # txt_file_path = os.path.join('/workspace', txt_filename)
 
     # Debugging file paths
     print(colored(f"SELECTED VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
     print(f"Checking file: {txt_filename}")
 
-    # Ensure the TXT file exists
-    if not os.path.isfile(txt_filename):
+
+    #BUT SOMEHOW THE TXT FILE IS MISSING HERE
+    if not os.path.isfile(txt_file_path):
         print(colored(f"Error: File does not exist: {txt_filename}", "red"))
         print(f"Current working directory: {os.getcwd()}")
 
