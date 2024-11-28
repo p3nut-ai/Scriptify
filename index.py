@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = ['pdf']
 MAX_PAGES = 12
-uploads_directory = os.path.join(os.getcwd(), "static", "uploads")
+uploads_directory = os.path.join(os.getcwd(), "workspace","static", "uploads")
 
 # will check if the extension is pdf or not, will return TRUE OR FALSE
 def allowed_extension(filename):
@@ -153,8 +153,7 @@ def convert_file():
     voice = request.form.get('voice')
     pdf_filename = request.form.get('file')
     reader = reader = request.form.get('reader')
-    txt_filename = os.path.join(uploads_directory, pdf_filename.rsplit(".", 1)[0] + ".txt")
-
+    txt_filename = pdf_filename.rsplit(".", 1)[0] + ".txt"
 
     # remove_images_from_pdf(pdf_filename, pdf_filename)
 
@@ -181,25 +180,13 @@ def pass_txt():
     txt_filename = request.args.get('txt_filename')
     mp3_filename = txt_filename.rsplit('.', 1)[0] + '.mp3'
 
+
+
     print(colored(f"SELECTED VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
-    print(f"Checking file: {txt_filename}")
 
-    # Debug the file path
-    print(f"Absolute path: {os.path.abspath(txt_filename)}")
-
-    # Ensure the file exists
-    if not os.path.isfile(txt_filename):
-        print(colored(f"Error: File does not exist: {txt_filename}", "red"))
-        return redirect(url_for('index', success_message=False))
-
-    # Open file safely
-    try:
-        with open(txt_filename, 'r') as file:
-            file_contents = file.read()
-    except Exception as e:
-        print(colored(f"Error reading file: {e}", "red"))
-        return redirect(url_for('index', success_message=False))
+    with open(txt_filename, 'r') as file:
+        file_contents = file.read()
 
     move_audio_to_static(pdf_filename)
     move_audio_to_static(txt_filename)
@@ -207,14 +194,13 @@ def pass_txt():
     if voice:
         print(colored(f"VOICE SELECTED : {voice}", "cyan"))
 
-        tts(text=file_contents, voice=voice, filename=mp3_filename, play_sound=False)
+        tts(text=file_contents, voice = voice, filename = mp3_filename, play_sound = False)
 
         move_audio_to_static(mp3_filename)
 
-        return redirect(url_for('index', success_message=True, mp3_filename=mp3_filename, file_converted=True, pdf_filename=pdf_filename))
+        return redirect(url_for('index', success_message = True, mp3_filename = mp3_filename, file_converted = True, pdf_filename = pdf_filename))  # Return a valid response
     else:
-        return redirect(url_for('index', success_message=False))
-
+        return redirect(url_for('index', success_message = False))
 
 @app.route('/reset', methods=['GET', 'POST'])
 def reset():
