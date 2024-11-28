@@ -183,16 +183,16 @@ def pass_txt():
     mp3_filename = os.path.splitext(txt_filename)[0] + '.mp3'  # Generate MP3 filename
 
     # Adjust paths for server
-    txt_file_path = os.path.join('/workspace', txt_filename)
+    # txt_file_path = os.path.join('/workspace', txt_filename)
 
     # Debugging file paths
     print(colored(f"SELECTED VOICE : {voice}", "yellow"))
     print(colored(f"PDF NAME : {pdf_filename}", "yellow"))
-    print(f"Checking file: {txt_file_path}")
+    print(f"Checking file: {txt_filename}")
 
     # Ensure the TXT file exists
-    if not os.path.isfile(txt_file_path):
-        print(colored(f"Error: File does not exist: {txt_file_path}", "red"))
+    if not os.path.isfile(txt_filename):
+        print(colored(f"Error: File does not exist: {txt_filename}", "red"))
         print(f"Current working directory: {os.getcwd()}")
         print(f"Contents of /workspace:")
         os.system("ls /workspace")  # Log contents of the directory for debugging
@@ -200,7 +200,7 @@ def pass_txt():
 
     # Open and read the file safely
     try:
-        with open(txt_file_path, 'r') as file:
+        with open(txt_filename, 'r') as file:
             file_contents = file.read()
     except Exception as e:
         print(colored(f"Error reading file: {e}", "red"))
